@@ -80,7 +80,7 @@ module ActiveModel
       end
 
       class HaveAttribute
-        attr_accessor :name, :actual
+        attr_accessor :name, :actual, :expected_key
 
         def initialize(name)
           @name = name
@@ -89,7 +89,9 @@ module ActiveModel
         def matches?(actual)
           @actual = actual
 
-          attributes.has_key?(name)
+          return false unless attributes.has_key?(name)
+          return true unless expected_key
+          attributes[name] == expected_key
         end
 
         def description
@@ -102,6 +104,11 @@ module ActiveModel
 
         def failure_message_for_should_not
           %Q{expected #{actual.inspect} to not include: "#{name}", but it did}
+        end
+        
+        def as(value)
+          self.expected_key = value
+          self
         end
 
         private
@@ -121,6 +128,7 @@ module ActiveModel
       def have_attribute(name)
         HaveAttribute.new name
       end
+      
 
       class AssociationMatcher
         attr_accessor :name, :actual, :expected_key
