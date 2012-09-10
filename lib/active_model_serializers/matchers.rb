@@ -123,7 +123,7 @@ module ActiveModel
       end
 
       class AssociationMatcher
-        attr_accessor :name, :actual, :key
+        attr_accessor :name, :actual, :expected_key
 
         def initialize(name)
           @name = name
@@ -131,22 +131,23 @@ module ActiveModel
 
         def matches?(actual)
           @actual = actual
-
-          matched_association = associations.select do |assc|
-            assc.name == name
-          end.first
-
+          
+          matched_association = associations.detect do |key, assc|
+            key == name
+          end
+          
           return false unless matched_association
-
-          if key
-            return false if matched_association.key != key
+          
+          if expected_key
+            association_key = matched_association.last.options[:key]
+            return false if association_key != expected_key
           end
 
           true
         end
 
         def as(value)
-          self.key = value
+          self.expected_key = value
           self
         end
 
